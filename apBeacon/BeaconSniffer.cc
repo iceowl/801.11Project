@@ -26,7 +26,7 @@ void BeaconSniffer::run(){
 
 bool BeaconSniffer::callback(PDU& pdu) {
 	PDU* receivedPDU = pdu.inner_pdu();
-
+    bool m;
 	//const Tins::PDU::PDUType abc = receivedPDU->pdu_type();
 	// Dot11ProbeRequest& probe = pdu.rfind_pdu<Dot11ProbeRequest>();
 
@@ -37,20 +37,18 @@ bool BeaconSniffer::callback(PDU& pdu) {
 			address_type addr1 = static_cast<Dot11ProbeRequest*>(receivedPDU)->addr1();
 			address_type addr2 = static_cast<Dot11ProbeRequest*>(receivedPDU)->addr2();
 			string ss = static_cast<Dot11ProbeRequest*>(receivedPDU)->ssid();
-			if(ss.compare(id.mySSID)) {
+			if((! (m = ss.compare(id.mySSID)))|| addr1.is_broadcast()){
+                if(!m) cout << "I was addressed directly ************** " << endl;
 				respond_to_addr = addr2;
 				return false;
 				//RespondToProbe(addr2);
 				//cout << "I replied to " << addr2  << " - "<< ss << endl;
-			}
-			ssids_type::iterator it = probed_addys.find(addr2);
-			if(it == probed_addys.end()) {
-				probed_addys.insert(addr2);
-				cout << "Probe Req " << addr1 << " - " << addr2 << " - " << ss << endl;
+			} else {
+				//cout << "Probe Req " << addr1 << " - " << addr2 << " - " << ss << endl;
 			}
 		}
 		catch(std::exception& e){
-			//cout << e.what() << endl;
+            //something should go here
 		}
 	}
 
@@ -59,11 +57,7 @@ bool BeaconSniffer::callback(PDU& pdu) {
 			address_type addr1 = static_cast<Dot11ProbeResponse*>(receivedPDU)->addr1();
 			address_type addr2 = static_cast<Dot11ProbeResponse*>(receivedPDU)->addr2();
 			string ss = static_cast<Dot11ProbeResponse*>(receivedPDU)->ssid();
-			ssids_type::iterator it = response_addys.find(addr2);
-			if(it == response_addys.end()) {
-				response_addys.insert(addr2);
-				cout << "Probe Rpl " << addr1 << " - " << addr2 << endl;
-			}
+            cout << "Probe Rpl " << addr1 << " - " << addr2 << endl;
 		}
 		catch(std::exception& e){
 			//cout << e.what() << endl;
@@ -72,25 +66,74 @@ bool BeaconSniffer::callback(PDU& pdu) {
 
 	case(Tins::PDU::PDUType::DOT11_BEACON) : {
 		try {
-			address_type addr1 = static_cast<Dot11Beacon*>(receivedPDU)->addr1();
-			address_type addr2 = static_cast<Dot11Beacon*>(receivedPDU)->addr2();
-			string ss = static_cast<Dot11Beacon*>(receivedPDU)->ssid();
-			set<std::string>::iterator it = ssids.find(ss);
-			if (it == ssids.end()) {
-				ssids.insert(ss);
-				cout << "Beacon    " << addr1 << " - " << addr2 << " - " << ss << endl;
-			}
+            address_type addr1 = static_cast<Dot11Beacon *>(receivedPDU)->addr1();
+            address_type addr2 = static_cast<Dot11Beacon *>(receivedPDU)->addr2();
+            string ss = static_cast<Dot11Beacon *>(receivedPDU)->ssid();
+            set<std::string>::iterator it = ssids.find(ss);
+            if (it == ssids.end()) {
+                ssids.insert(ss);
+                cout << "Beacon    " << addr1 << " - " << addr2 << " - " << ss << endl;
+            }
+            //cout << "Beacon    " << addr1 << " - " << addr2 << " - " << ss << endl;
+
 		}
 		catch(std::exception& e){
 			//cout << e.what() << endl;
 		}
 	}
 
-	default: {
-		if(Tins::PDU::PDUType::DOT11_BEACON == 1223)
-			cout << "pdu type = " << PDUTypes_string[receivedPDU->pdu_type()] << endl;
-	}
-	}
+        case PDU::RAW:break;
+        case PDU::ETHERNET_II:break;
+        case PDU::IEEE802_3:break;
+        case PDU::RADIOTAP:break;
+        case PDU::DOT11:break;
+        case PDU::DOT11_ACK:break;
+        case PDU::DOT11_ASSOC_REQ:break;
+        case PDU::DOT11_ASSOC_RESP:break;
+        case PDU::DOT11_AUTH:break;
+        case PDU::DOT11_BLOCK_ACK:break;
+        case PDU::DOT11_BLOCK_ACK_REQ:break;
+        case PDU::DOT11_CF_END:break;
+        case PDU::DOT11_DATA:break;
+        case PDU::DOT11_CONTROL:break;
+        case PDU::DOT11_DEAUTH:break;
+        case PDU::DOT11_DIASSOC:break;
+        case PDU::DOT11_END_CF_ACK:break;
+        case PDU::DOT11_MANAGEMENT:break;
+        case PDU::DOT11_PS_POLL:break;
+        case PDU::DOT11_REASSOC_REQ:break;
+        case PDU::DOT11_REASSOC_RESP:break;
+        case PDU::DOT11_RTS:break;
+        case PDU::DOT11_QOS_DATA:break;
+        case PDU::LLC:break;
+        case PDU::SNAP:break;
+        case PDU::IP:break;
+        case PDU::ARP:break;
+        case PDU::TCP:break;
+        case PDU::UDP:break;
+        case PDU::ICMP:break;
+        case PDU::BOOTP:break;
+        case PDU::DHCP:break;
+        case PDU::EAPOL:break;
+        case PDU::RC4EAPOL:break;
+        case PDU::RSNEAPOL:break;
+        case PDU::DNS:break;
+        case PDU::LOOPBACK:break;
+        case PDU::IPv6:break;
+        case PDU::ICMPv6:break;
+        case PDU::SLL:break;
+        case PDU::DHCPv6:break;
+        case PDU::DOT1Q:break;
+        case PDU::PPPOE:break;
+        case PDU::STP:break;
+        case PDU::PPI:break;
+        case PDU::IPSEC_AH:break;
+        case PDU::IPSEC_ESP:break;
+        case PDU::PKTAP:break;
+        case PDU::MPLS:break;
+        case PDU::UNKNOWN:break;
+        case PDU::USER_DEFINED_PDU:break;
+    }
 
 	return true;
 }
@@ -99,6 +142,8 @@ void BeaconSniffer::RespondToProbe() {
 
 
 	try {
+
+        sequence_lock.lock();
 
 
 		Dot11ProbeResponse myResponse(respond_to_addr, id.myMac);
@@ -144,7 +189,10 @@ void BeaconSniffer::RespondToProbe() {
 
 		radio.send(sender,id.nIface);
 
+        sequence_lock.unlock();
+
 		cout << " responded to  " << respond_to_addr << " as " << id.myMac << endl;
+
 
 	}
 	catch(std::exception& e){

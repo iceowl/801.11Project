@@ -96,7 +96,10 @@ void BeaconSender::MakeRadio() {
 
 void BeaconSender::run(){
 
+
+
 	while(1){
+		sequence_lock.lock();
 		try {
 			sender->send(*radio,id.nIface);
 		}
@@ -104,9 +107,11 @@ void BeaconSender::run(){
 			std::cout<< "couldn't send beacon - " << e.what() << endl;
 		}
 
-		usleep(102400); //102.4 milliseconds
+
 		beacon->seq_num(id.sequence++);
 		if(id.sequence > 4094) id.sequence = 100;
+		sequence_lock.unlock();
+		usleep(102400); //102.4 milliseconds
 		//MakeBeacon();
 		//MakeRadio();
 	}

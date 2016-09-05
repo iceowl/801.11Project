@@ -13,6 +13,7 @@
 #include <string>
 #include <tins/tins.h>
 #include <unistd.h>
+#include<mutex>
 
 
 using std::set;
@@ -20,6 +21,8 @@ using std::cout;
 using std::endl;
 using std::string;
 using std::runtime_error;
+
+static std::mutex sequence_lock;
 
 using namespace Tins;
 

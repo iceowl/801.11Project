@@ -13,6 +13,8 @@ void SenderWrapper(BeaconSender* sb){
 	sb->run();
 }
 
+
+
 int main(int argc, char* argv[]) {
     if (argc != 2) {
         cout << "Usage: " <<* argv << " <interface>" << endl;
