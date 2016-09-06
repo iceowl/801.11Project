@@ -34,10 +34,10 @@ public:
 	void MakeRadio();
 	void run();
     myID& id;
-    PacketSender *sender;
-	//PacketSender sender {id.nIface,0,0};
-	Dot11Beacon *beacon;
-	RadioTap *radio;
+    //PacketSender *sender;
+	PacketSender sender {id.nIface,0,0};
+    Dot11Beacon *beacon;
+    RadioTap *radio;
 
 };
 

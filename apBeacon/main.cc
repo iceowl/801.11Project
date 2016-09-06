@@ -10,6 +10,7 @@ using namespace Tins;
 static void SenderWrapper (BeaconSender* sb);
 
 void SenderWrapper(BeaconSender* sb){
+
 	sb->run();
 }
 
@@ -25,8 +26,8 @@ int main(int argc, char* argv[]) {
 
     string interface = argv[1];
 
-    myID mID {interface, "CoffeeTime", "00:c0:ca:8f:4c:cf"};
-    BeaconSender bSender {mID};
+    static myID mID {interface, "CoffeeTime", "00:c0:ca:8f:4c:cf", 11};
+    static BeaconSender bSender {mID};
     //bSender.run();//only for testing purposes
     std::thread t(SenderWrapper,&bSender);
     t.detach();

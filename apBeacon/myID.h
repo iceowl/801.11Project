@@ -29,10 +29,11 @@ using namespace Tins;
 
 class myID {
 public:
-	myID(std::string x, std::string y, HWAddress<6> z);
+	myID(std::string x, std::string y, HWAddress<6> z, short channel);
 	const std::string myIface;
 	const std::string mySSID;
 	const HWAddress<6> myMac;
+	const short channel;
 	NetworkInterface nIface{myIface};
 	unsigned short sequence = 0;
 

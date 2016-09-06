@@ -15,7 +15,7 @@ using namespace Utils;
 
 BeaconSender::BeaconSender(myID& t_id) : id {t_id} {
 
-	sender = new PacketSender {id.nIface,0,0};
+	//sender = new PacketSender {id.nIface,0,0};
 	MakeBeacon();
 	MakeRadio();
 
@@ -48,7 +48,7 @@ void BeaconSender::MakeBeacon() {
 	// Let's add an ssid option
 	beacon->ssid(id.mySSID);
 	// Our current channel is 8
-	beacon->ds_parameter_set(8);
+	beacon->ds_parameter_set(id.channel);
 	// This is our list of supported rates:
 	beacon->supported_rates({ 1.0f, 5.5f, 11.0f });
 
@@ -58,6 +58,10 @@ void BeaconSender::MakeBeacon() {
 	beacon->country(myCountry);
 	beacon->tim(myTim);
 
+   // timeval tv;
+   // gettimeofday(&tv,nullptr);
+    timespec tp;
+    beacon->timestamp(clock_gettime(CLOCK_MONOTONIC,&tp));
 	// Encryption: we'll say we use WPA2-psk encryption
 	beacon->rsn_information(RSNInformation::wpa2_psk());
 
@@ -74,8 +78,8 @@ void BeaconSender::MakeBeacon() {
 	//cap.spectrum_mgmt(false);
 	//cap.pbcc(false);
 	//cap.short_preamble(false);
-	//Dot11ManagementFrame::bss_load_type myLoad (0,255,0);
-	//beacon->bss_load(myLoad);
+	Dot11ManagementFrame::bss_load_type myLoad (0,255,0);
+	beacon->bss_load(myLoad);
 	beacon->seq_num(id.sequence++);
 	if(id.sequence > 4095) id.sequence = 100;
 
@@ -100,8 +104,11 @@ void BeaconSender::run(){
 
 	while(1){
 		sequence_lock.lock();
+        MakeBeacon();
+        MakeRadio();
 		try {
-			sender->send(*radio,id.nIface);
+            radio->send(sender,id.nIface);
+           // std::cout << "sent beacon at  " << beacon->timestamp() << endl;
 		}
 		catch(std::exception& e){
 			std::cout<< "couldn't send beacon - " << e.what() << endl;
@@ -112,8 +119,7 @@ void BeaconSender::run(){
 		if(id.sequence > 4094) id.sequence = 100;
 		sequence_lock.unlock();
 		usleep(102400); //102.4 milliseconds
-		//MakeBeacon();
-		//MakeRadio();
+
 	}
 	return;
 }

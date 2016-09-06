@@ -7,7 +7,7 @@
 
 #include "myID.h"
 
-myID::myID(std::string x, std::string y, HWAddress<6> z) : myIface{x}, mySSID{y}, myMac{z} {
+myID::myID(std::string x, std::string y, HWAddress<6> z, short chan) : myIface{x}, mySSID{y}, myMac{z}, channel{chan} {
 	sequence = 100;
 };
 

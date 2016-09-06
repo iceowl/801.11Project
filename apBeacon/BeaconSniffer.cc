@@ -16,71 +16,71 @@ BeaconSniffer::BeaconSniffer(myID& s) : id{s} {
 
 //void BeaconSniffer::run(const std::string& iface) {
 void BeaconSniffer::run(){
-	config.set_promisc_mode(true);
-	//bconfig.set_filter("type mgt subtype probereq");
-	//config.set_filter("type mgt subtype beacon");
-	config.set_rfmon(true);
-	Sniffer sniffer {id.myIface, config};
-	sniffer.sniff_loop(make_sniffer_handler(this, &BeaconSniffer::callback));
+    config.set_promisc_mode(true);
+    //bconfig.set_filter("type mgt subtype probereq");
+    //config.set_filter("type mgt subtype beacon");
+    config.set_rfmon(true);
+    Sniffer sniffer {id.myIface, config};
+    sniffer.sniff_loop(make_sniffer_handler(this, &BeaconSniffer::callback));
 }
 
 bool BeaconSniffer::callback(PDU& pdu) {
-	PDU* receivedPDU = pdu.inner_pdu();
+    PDU* receivedPDU = pdu.inner_pdu();
     bool m;
-	//const Tins::PDU::PDUType abc = receivedPDU->pdu_type();
-	// Dot11ProbeRequest& probe = pdu.rfind_pdu<Dot11ProbeRequest>();
+    //const Tins::PDU::PDUType abc = receivedPDU->pdu_type();
+    // Dot11ProbeRequest& probe = pdu.rfind_pdu<Dot11ProbeRequest>();
 
-	switch(receivedPDU->pdu_type()) {
+    switch(receivedPDU->pdu_type()) {
 
-	case(Tins::PDU::PDUType::DOT11_PROBE_REQ): {
-		try {
-			address_type addr1 = static_cast<Dot11ProbeRequest*>(receivedPDU)->addr1();
-			address_type addr2 = static_cast<Dot11ProbeRequest*>(receivedPDU)->addr2();
-			string ss = static_cast<Dot11ProbeRequest*>(receivedPDU)->ssid();
-			if((! (m = ss.compare(id.mySSID)))|| addr1.is_broadcast()){
-                if(!m) cout << "I was addressed directly ************** " << endl;
-				respond_to_addr = addr2;
-				return false;
-				//RespondToProbe(addr2);
-				//cout << "I replied to " << addr2  << " - "<< ss << endl;
-			} else {
-				//cout << "Probe Req " << addr1 << " - " << addr2 << " - " << ss << endl;
-			}
-		}
-		catch(std::exception& e){
-            //something should go here
-		}
-	}
-
-	case(Tins::PDU::PDUType::DOT11_PROBE_RESP): {
-		try {
-			address_type addr1 = static_cast<Dot11ProbeResponse*>(receivedPDU)->addr1();
-			address_type addr2 = static_cast<Dot11ProbeResponse*>(receivedPDU)->addr2();
-			string ss = static_cast<Dot11ProbeResponse*>(receivedPDU)->ssid();
-            cout << "Probe Rpl " << addr1 << " - " << addr2 << endl;
-		}
-		catch(std::exception& e){
-			//cout << e.what() << endl;
-		}
-	}
-
-	case(Tins::PDU::PDUType::DOT11_BEACON) : {
-		try {
-            address_type addr1 = static_cast<Dot11Beacon *>(receivedPDU)->addr1();
-            address_type addr2 = static_cast<Dot11Beacon *>(receivedPDU)->addr2();
-            string ss = static_cast<Dot11Beacon *>(receivedPDU)->ssid();
-            set<std::string>::iterator it = ssids.find(ss);
-            if (it == ssids.end()) {
-                ssids.insert(ss);
-                cout << "Beacon    " << addr1 << " - " << addr2 << " - " << ss << endl;
+        case(Tins::PDU::PDUType::DOT11_PROBE_REQ): {
+            try {
+                address_type addr1 = static_cast<Dot11ProbeRequest*>(receivedPDU)->addr1();
+                address_type addr2 = static_cast<Dot11ProbeRequest*>(receivedPDU)->addr2();
+                string ss = static_cast<Dot11ProbeRequest*>(receivedPDU)->ssid();
+                if((! (m = ss.compare(id.mySSID)))|| addr1.is_broadcast()){
+                    if(!m) cout << "I was addressed directly ************** " << endl;
+                    respond_to_addr = addr2;
+                    return false;
+                    //RespondToProbe(addr2);
+                    //cout << "I replied to " << addr2  << " - "<< ss << endl;
+                } else {
+                    //cout << "Probe Req " << addr1 << " - " << addr2 << " - " << ss << endl;
+                }
             }
-            //cout << "Beacon    " << addr1 << " - " << addr2 << " - " << ss << endl;
+            catch(std::exception& e){
+                //something should go here
+            }
+        }
 
-		}
-		catch(std::exception& e){
-			//cout << e.what() << endl;
-		}
-	}
+        case(Tins::PDU::PDUType::DOT11_PROBE_RESP): {
+            try {
+                address_type addr1 = static_cast<Dot11ProbeResponse*>(receivedPDU)->addr1();
+                address_type addr2 = static_cast<Dot11ProbeResponse*>(receivedPDU)->addr2();
+                string ss = static_cast<Dot11ProbeResponse*>(receivedPDU)->ssid();
+                cout << "Probe Rpl " << addr1 << " - " << addr2 << endl;
+            }
+            catch(std::exception& e){
+                //cout << e.what() << endl;
+            }
+        }
+
+        case(Tins::PDU::PDUType::DOT11_BEACON) : {
+            try {
+                address_type addr1 = static_cast<Dot11Beacon *>(receivedPDU)->addr1();
+                address_type addr2 = static_cast<Dot11Beacon *>(receivedPDU)->addr2();
+                string ss = static_cast<Dot11Beacon *>(receivedPDU)->ssid();
+                set<std::string>::iterator it = ssids.find(ss);
+                if (it == ssids.end()) {
+                    ssids.insert(ss);
+                    cout << "Beacon    " << addr1 << " - " << addr2 << " - " << ss << endl;
+                }
+                //cout << "Beacon    " << addr1 << " - " << addr2 << " - " << ss << endl;
+
+            }
+            catch(std::exception& e){
+                //cout << e.what() << endl;
+            }
+        }
 
         case PDU::RAW:break;
         case PDU::ETHERNET_II:break;
@@ -135,69 +135,70 @@ bool BeaconSniffer::callback(PDU& pdu) {
         case PDU::USER_DEFINED_PDU:break;
     }
 
-	return true;
+    return true;
 }
 
 void BeaconSniffer::RespondToProbe() {
 
 
-	try {
+    try {
 
         sequence_lock.lock();
 
 
-		Dot11ProbeResponse myResponse(respond_to_addr, id.myMac);
-		// Let's add an ssid option
-		myResponse.ssid(id.mySSID);
-		myResponse.addr3(id.myMac); //need for BSSID
-		//myResponse.addr4(id.myMac);
-		// Our current channel is 8
-		myResponse.ds_parameter_set(8);
-		// This is our list of supported rates:
-		myResponse.supported_rates({ 1.0f, 5.5f, 11.0f });
+        Dot11ProbeResponse myResponse(respond_to_addr, id.myMac);
+        // Let's add an ssid option
+        myResponse.ssid(id.mySSID);
+        myResponse.addr3(id.myMac); //need for BSSID
+        //myResponse.addr4(id.myMac);
+        // Our current channel is 8
+        myResponse.ds_parameter_set(id.channel);
+        // This is our list of supported rates:
+        myResponse.supported_rates({ 1.0f, 5.5f, 11.0f });
 
-		// Encryption: we'll say we use WPA2-psk encryption
-		myResponse.rsn_information(RSNInformation::wpa2_psk());
-		myResponse.interval(100);
-		Dot11Beacon::country_params  myCountry("US ",
-				byte_array(1, 1), //first
-				byte_array(1, 13), //num channels
-				byte_array(1, 20)); //max power
+        // Encryption: we'll say we use WPA2-psk encryption
+        myResponse.rsn_information(RSNInformation::wpa2_psk());
+        myResponse.interval(100);
+        Dot11Beacon::country_params  myCountry("US ",
+                                               byte_array(1, 1), //first
+                                               byte_array(1, 13), //num channels
+                                               byte_array(1, 20)); //max power
 
-		Dot11ManagementFrame::capability_information& cap = myResponse.capabilities();
-		cap.ess(true);
+        Dot11ManagementFrame::capability_information& cap = myResponse.capabilities();
+        cap.ess(true);
 
-		myResponse.country(myCountry);
+        myResponse.country(myCountry);
 
-		Dot11ManagementFrame::quiet_type myQuiet (0,0,0,0);
+        Dot11ManagementFrame::quiet_type myQuiet (0,0,0,0);
 
-		myResponse.quiet(myQuiet);
+        myResponse.quiet(myQuiet);
 
-		myResponse.tpc_report(200,0); //power, delay
+        myResponse.tpc_report(200,0); //power, delay
 
+        timespec tp;
+        myResponse.timestamp(clock_gettime(CLOCK_MONOTONIC,&tp));
 
-
-		Dot11ManagementFrame::bss_load_type myLoad (0,255,0);
-		myResponse.bss_load(myLoad);
+        Dot11ManagementFrame::bss_load_type myLoad (0,255,0);
+        myResponse.bss_load(myLoad);
         myResponse.seq_num(id.sequence++);
-		if(id.sequence > 4094) id.sequence = 100;
-		//MakeBeacon();
-		RadioTap radio = RadioTap();
-		radio.inner_pdu(myResponse);
-		radio.antenna(2);
-		radio.channel(Utils::channel_to_mhz(8),0x00a0);
+        if(id.sequence > 4094) id.sequence = 100;
+        //MakeBeacon();
+        RadioTap radio = RadioTap();
+        radio.inner_pdu(myResponse);
+        radio.antenna(2);
+        radio.channel(Utils::channel_to_mhz(8),0x00a0);
 
-		radio.send(sender,id.nIface);
+        radio.send(sender,id.nIface);
 
         sequence_lock.unlock();
 
-		cout << " responded to  " << respond_to_addr << " as " << id.myMac << endl;
+        cout << " responded to  " << respond_to_addr << " as " << id.myMac << endl;
 
 
-	}
-	catch(std::exception& e){
-		cout << e.what() << endl;
-	}
+    }
+    catch(std::exception& e){
+        cout << e.what() << endl;
+    }
 
 }
 
